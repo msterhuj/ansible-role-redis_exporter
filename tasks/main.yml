@@ -1,2 +1,67 @@
 ---
 # tasks file for redis_exporter
+
+- name: "Check if redis_exporter is installed"
+  stat:
+    path: "{{ redis_exporter_binary_path }}/redis_exporter"
+  register: redis_exporter_installed
+
+
+- name: "Install redis_exporter service"
+  block:
+    - name: "Download redis_exporter"
+      get_url:
+        url: "{{ redis_exporter_download_url }}"
+        dest: "/tmp/redis_exporter-{{ redis_exporter_version }}.{{ redis_exporter_type }}.tar.gz"
+        mode: 0644
+
+    - name: "Extract redis_exporter to to tmp"
+      unarchive:
+        src: "/tmp/redis_exporter-{{ redis_exporter_version }}.{{ redis_exporter_type }}.tar.gz"
+        dest: "/tmp"
+        remote_src: true
+
+    - name: "Copy redis_exporter to binary path"
+      copy:
+        remote_src: true
+        src: "/tmp/redis_exporter-{{ redis_exporter_version }}.{{ redis_exporter_type }}/redis_exporter"
+        dest: "{{ redis_exporter_binary_path }}"
+        mode: 0755
+
+    - name: "Create redis_exporter user"
+      user:
+        name: "redis_exporter"
+        state: present
+        shell: /bin/false
+        system: true
+        createhome: false
+      
+
+    - name: "Create redis_exporter service"
+      template:
+        src: "redis_exporter.service.j2"
+        dest: "/etc/systemd/system/redis_exporter.service"
+        owner: root
+        group: root
+        mode: 0644
+
+  when:
+    - redis_exporter_installed.stat.exists == false
+    - redis_exporter_force_install == true
+  tags: install
+
+- name: "Ensure redis_exporter service is running"
+  service:
+    name: "redis_exporter"
+    state: started
+    enabled: true
+
+- name: "Test if service respond to web request"
+  uri:
+    url: "http://localhost:9121/metrics"
+    status_code: 200
+  register: redis_exporter_status
+  until: redis_exporter_status.status == 200
+  retries: 10
+  delay: 5
+  tags: check

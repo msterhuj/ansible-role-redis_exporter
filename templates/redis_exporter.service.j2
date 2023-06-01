@@ -1,0 +1,14 @@
+[Unit]
+Description=Expose redis metric for prometheus
+After=network.target
+Wants=network-online.target
+
+[Service]
+Restart=always
+Type=simple
+ExecStart=redis_exporter
+User=redis_exporter
+Group=redis_exporter
+
+[Install]
+WantedBy=multi-user.target

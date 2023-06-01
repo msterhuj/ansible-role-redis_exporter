@@ -1,2 +1,7 @@
 ---
 # defaults file for redis_exporter
+redis_exporter_version: v1.50.0
+redis_exporter_type: "linux-amd64"
+redis_exporter_download_url: https://github.com/oliver006/redis_exporter/releases/download/{{ redis_exporter_version }}/redis_exporter-{{ redis_exporter_version }}.{{ redis_exporter_type }}.tar.gz
+redis_exporter_binary_path: /usr/local/bin/
+redis_exporter_force_install: false

@@ -1,7 +1,7 @@
 Role Name
 =========
 
-A brief description of the role goes here.
+Install Redis exporter from this [repo](https://github.com/oliver006/redis_exporter/releases)
 
 Requirements
 ------------
